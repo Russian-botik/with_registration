@@ -1,0 +1,91 @@
+pipeline {
+    agent any
+    
+    environment {
+        PROJECT_PATH = 'C:/schedule-project/schedule-generator/demo'
+        APP_PORT = '8081'
+    }
+    
+    stages {
+        stage('Check Environment') {
+            steps {
+                echo 'Checking Java and Maven versions...'
+                bat 'java -version'
+                bat 'mvn -version'
+            }
+        }
+        
+        stage('Clean Workspace') {
+            steps {
+                dir("${env.PROJECT_PATH}") {
+                    bat 'mvn clean'
+                }
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                dir("${env.PROJECT_PATH}") {
+                    bat 'mvn package -DskipTests'
+                }
+            }
+        }
+        
+        stage('Start Application') {
+            steps {
+                dir("${env.PROJECT_PATH}") {
+                    bat '''
+                        start /B java -jar target/demo-0.0.1-SNAPSHOT.jar
+                        echo "Waiting for application to start..."
+                        timeout /t 30
+                    '''
+                }
+            }
+        }
+        
+        stage('Health Check') {
+            steps {
+                script {
+                    def response = bat(script: 'curl -s -o nul -w "%%{http_code}" http://localhost:8081/api/teachers', returnStdout: true).trim()
+                    if (response != "200") {
+                        error "Application health check failed with status: ${response}"
+                    }
+                }
+            }
+        }
+        
+        stage('Run API Tests') {
+            steps {
+                dir("${env.PROJECT_PATH}") {
+                    bat 'mvn test -Dtest=ApiTest'
+                }
+            }
+        }
+        
+        stage('Generate Reports') {
+            steps {
+                dir("${env.PROJECT_PATH}") {
+                    bat 'mvn surefire-report:report'
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            dir("${env.PROJECT_PATH}") {
+                junit '**/target/surefire-reports/*.xml'
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            }
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+        cleanup {
+            bat 'taskkill /F /IM java.exe'
+        }
+    }
+} 
