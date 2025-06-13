@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ScheduleService {
     @Autowired
@@ -14,6 +16,10 @@ public class ScheduleService {
 
     public Page<Schedule> getSchedule(Pageable pageable) {
         return scheduleRepository.findAll(pageable);
+    }
+
+    public List<Schedule> getAllSchedules() {
+        return scheduleRepository.findAll();
     }
 
     public Schedule addSchedule(Schedule schedule) {

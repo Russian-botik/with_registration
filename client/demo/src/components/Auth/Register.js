@@ -8,13 +8,15 @@ import {
   Container,
   Paper,
   Link,
+  Alert,
 } from '@mui/material';
 import { API_BASE_URL } from '../../config';
 
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -42,14 +44,15 @@ const Register = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: formData.username,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
           email: formData.email,
           password: formData.password,
         }),
       });
 
       if (response.ok) {
-        navigate('/login');
+        navigate('/login', { state: { message: 'Регистрация успешна! Теперь вы можете войти.' } });
       } else {
         const errorData = await response.json();
         setError(errorData.message || 'Ошибка при регистрации');
@@ -87,12 +90,23 @@ const Register = () => {
               margin="normal"
               required
               fullWidth
-              id="username"
-              label="Имя пользователя"
-              name="username"
-              autoComplete="username"
+              id="firstName"
+              label="Имя"
+              name="firstName"
+              autoComplete="given-name"
               autoFocus
-              value={formData.username}
+              value={formData.firstName}
+              onChange={handleChange}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="lastName"
+              label="Фамилия"
+              name="lastName"
+              autoComplete="family-name"
+              value={formData.lastName}
               onChange={handleChange}
             />
             <TextField
@@ -130,9 +144,9 @@ const Register = () => {
               onChange={handleChange}
             />
             {error && (
-              <Typography color="error" sx={{ mt: 2 }}>
+              <Alert severity="error" sx={{ mt: 2 }}>
                 {error}
-              </Typography>
+              </Alert>
             )}
             <Button
               type="submit"

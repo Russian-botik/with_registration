@@ -16,7 +16,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: '',
   });
   const [error, setError] = useState('');
@@ -59,7 +59,7 @@ const Login = () => {
         localStorage.setItem('token', data.token);
         navigate('/schedule');
       } else {
-        setError(data.error || 'Неверное имя пользователя или пароль');
+        setError(data.message || 'Неверный email или пароль');
       }
     } catch (err) {
       setError('Произошла ошибка при подключении к серверу');
@@ -101,12 +101,12 @@ const Login = () => {
               margin="normal"
               required
               fullWidth
-              id="username"
-              label="Имя пользователя"
-              name="username"
-              autoComplete="username"
+              id="email"
+              label="Email"
+              name="email"
+              autoComplete="email"
               autoFocus
-              value={formData.username}
+              value={formData.email}
               onChange={handleChange}
               disabled={loading}
             />
