@@ -9,6 +9,7 @@ import {
   Paper,
   Link,
 } from '@mui/material';
+import { API_BASE_URL } from '../../config';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ const Register = () => {
     }
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

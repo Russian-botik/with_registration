@@ -15,6 +15,7 @@ import {
   InputLabel,
   Grid,
 } from '@mui/material';
+import { API_BASE_URL } from '../../config';
 
 const ScheduleView = () => {
   const [schedule, setSchedule] = useState([]);
@@ -46,7 +47,7 @@ const ScheduleView = () => {
 
   const fetchTeachers = async () => {
     try {
-      const response = await fetch('/api/teachers', {
+      const response = await fetch(`${API_BASE_URL}/api/teachers`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -66,7 +67,7 @@ const ScheduleView = () => {
 
   const fetchSchedule = async () => {
     try {
-      const response = await fetch(`/api/schedule/teacher/${selectedTeacher}`, {
+      const response = await fetch(`${API_BASE_URL}/api/schedule/teacher/${selectedTeacher}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
