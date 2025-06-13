@@ -5,21 +5,21 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "users")
-public class User {
+@Table(name = "classrooms")
+public class Classroom {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String username;
+    @Column(nullable = false)
+    private String name;
 
     @Column(nullable = false)
-    private String password;
+    private Integer capacity;
 
-    @Column(nullable = false)
-    private String email;
+    @Column
+    private String type;
 
-    @Column(nullable = false)
-    private String role = "USER";
+    @Column
+    private String description;
 } 

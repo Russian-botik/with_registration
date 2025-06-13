@@ -5,7 +5,6 @@ import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,18 +18,17 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Transactional
     public User register(User user) {
         logger.info("Starting registration process for user: {}", user.getUsername());
         
         if (userRepository.existsByUsername(user.getUsername())) {
             logger.warn("Registration failed: username {} already exists", user.getUsername());
-            throw new RuntimeException("Пользователь с таким именем уже существует");
+            throw new RuntimeException("Username is already taken");
         }
         
         if (userRepository.existsByEmail(user.getEmail())) {
             logger.warn("Registration failed: email {} already exists", user.getEmail());
-            throw new RuntimeException("Пользователь с таким email уже существует");
+            throw new RuntimeException("Email is already in use");
         }
 
         try {

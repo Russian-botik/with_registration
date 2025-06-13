@@ -1,0 +1,176 @@
+pipeline {
+    agent any
+    
+    environment {
+        API_URL = 'http://localhost:8082'
+    }
+    
+    stages {
+        stage('Setup') {
+            steps {
+                sh 'mvn clean install -DskipTests'
+            }
+        }
+        
+        stage('Start Application') {
+            steps {
+                sh 'mvn spring-boot:run &'
+                sh 'sleep 30' // Ждем запуска приложения
+            }
+        }
+        
+        stage('Test Auth API') {
+            steps {
+                script {
+                    // Регистрация пользователя
+                    def registerResponse = sh(
+                        script: '''
+                            curl -X POST ${API_URL}/api/auth/register \
+                            -H "Content-Type: application/json" \
+                            -d '{"username":"testuser","password":"password123","email":"test@example.com"}'
+                        ''',
+                        returnStdout: true
+                    )
+                    echo "Register Response: ${registerResponse}"
+                    
+                    // Вход пользователя
+                    def loginResponse = sh(
+                        script: '''
+                            curl -X POST ${API_URL}/api/auth/login \
+                            -H "Content-Type: application/json" \
+                            -d '{"username":"testuser","password":"password123"}'
+                        ''',
+                        returnStdout: true
+                    )
+                    echo "Login Response: ${loginResponse}"
+                }
+            }
+        }
+        
+        stage('Test Classrooms API') {
+            steps {
+                script {
+                    // Добавление аудитории
+                    def classroomResponse = sh(
+                        script: '''
+                            curl -X POST ${API_URL}/api/classrooms \
+                            -H "Content-Type: application/json" \
+                            -d '{"name":"101","capacity":30,"type":"LECTURE"}'
+                        ''',
+                        returnStdout: true
+                    )
+                    echo "Add Classroom Response: ${classroomResponse}"
+                    
+                    // Получение списка аудиторий
+                    def getClassroomsResponse = sh(
+                        script: "curl -X GET ${API_URL}/api/classrooms",
+                        returnStdout: true
+                    )
+                    echo "Get Classrooms Response: ${getClassroomsResponse}"
+                }
+            }
+        }
+        
+        stage('Test Subjects API') {
+            steps {
+                script {
+                    // Добавление предмета
+                    def subjectResponse = sh(
+                        script: '''
+                            curl -X POST ${API_URL}/api/subjects \
+                            -H "Content-Type: application/json" \
+                            -d '{"name":"Математика","description":"Базовый курс математики"}'
+                        ''',
+                        returnStdout: true
+                    )
+                    echo "Add Subject Response: ${subjectResponse}"
+                    
+                    // Получение списка предметов
+                    def getSubjectsResponse = sh(
+                        script: "curl -X GET ${API_URL}/api/subjects",
+                        returnStdout: true
+                    )
+                    echo "Get Subjects Response: ${getSubjectsResponse}"
+                }
+            }
+        }
+        
+        stage('Test Teachers API') {
+            steps {
+                script {
+                    // Добавление преподавателя
+                    def teacherResponse = sh(
+                        script: '''
+                            curl -X POST ${API_URL}/api/teachers \
+                            -H "Content-Type: application/json" \
+                            -d '{"firstName":"Иван","lastName":"Иванов","email":"ivanov@example.com"}'
+                        ''',
+                        returnStdout: true
+                    )
+                    echo "Add Teacher Response: ${teacherResponse}"
+                    
+                    // Получение списка преподавателей
+                    def getTeachersResponse = sh(
+                        script: "curl -X GET ${API_URL}/api/teachers",
+                        returnStdout: true
+                    )
+                    echo "Get Teachers Response: ${getTeachersResponse}"
+                }
+            }
+        }
+        
+        stage('Test TeacherSubjects API') {
+            steps {
+                script {
+                    // Добавление связи преподавателя с предметом
+                    def teacherSubjectResponse = sh(
+                        script: '''
+                            curl -X POST ${API_URL}/api/teacher-subjects \
+                            -H "Content-Type: application/json" \
+                            -d '{"teacherId":1,"subjectId":1}'
+                        ''',
+                        returnStdout: true
+                    )
+                    echo "Add TeacherSubject Response: ${teacherSubjectResponse}"
+                    
+                    // Получение связей преподавателя
+                    def getTeacherSubjectsResponse = sh(
+                        script: "curl -X GET ${API_URL}/api/teacher-subjects/teacher/1",
+                        returnStdout: true
+                    )
+                    echo "Get TeacherSubjects Response: ${getTeacherSubjectsResponse}"
+                }
+            }
+        }
+        
+        stage('Test Schedules API') {
+            steps {
+                script {
+                    // Добавление занятия в расписание
+                    def scheduleResponse = sh(
+                        script: '''
+                            curl -X POST ${API_URL}/api/schedules \
+                            -H "Content-Type: application/json" \
+                            -d '{"teacherSubjectId":1,"classroomId":1,"dayOfWeek":"MONDAY","startTime":"09:00","endTime":"10:30"}'
+                        ''',
+                        returnStdout: true
+                    )
+                    echo "Add Schedule Response: ${scheduleResponse}"
+                    
+                    // Получение расписания
+                    def getSchedulesResponse = sh(
+                        script: "curl -X GET ${API_URL}/api/schedules",
+                        returnStdout: true
+                    )
+                    echo "Get Schedules Response: ${getSchedulesResponse}"
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            sh 'pkill -f "spring-boot:run" || true'
+        }
+    }
+} 
